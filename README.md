@@ -1,9 +1,14 @@
 ### Java客户端调用Python服务端
 
+如果我们的大型web服务是采用Spring框架编写的，然而深度学习计算框架TensorFlow是采用Python编写的，那么如何让客户端调用Python服务端的计算资源返回结果呢，一种可以采用传统的HTTP Web Service的方式，将服务端封装为Web服务，客户端直接通过JSON请求进行调用并返回结果；另外一种是通过基于HTTP2协议RPC服务，Python将计算服务注册在注册中心，Java客户端通过端口号在注册中心找到对应的服务后，调用服务端的服务实例。
+
 #### 使用Web Service调用
 
+首先Python编写路由，将请求封装为Web服务，然后Java客户端根据路由，发送请求给服务端，服务端收到请求以后执行计算服务并返回结果，Python将返回的计算结果封装为JSON回传给Java客户端，Java客户端对结果进行解析即可。
+
 0. 安装依赖
-Python: pip install flask
+
+Python: ```pip install flask```
 
 Java在maven中加入相关的包
 ```xml
@@ -15,6 +20,7 @@ Java在maven中加入相关的包
 ```
 
 1. Python服务端采用Flash便携式路由，并调用深度学习服务（这里简单用Hello World代替）
+
 ```python
 from flask import Flask
 app = Flask(__name__)
@@ -28,6 +34,7 @@ if __name__ == '__main__':
 ```
 
 2. Java客户端采用RestTemplate请求URL并返回结果
+
 ```java
 public class HelloWorldClientByURL {
     public static void main(String[] args) {
@@ -40,15 +47,21 @@ public class HelloWorldClientByURL {
 }
 ```
 3. 先开启Python服务端，然后执行Java客户端，这时返回结果
+
 ```text
 hello world
 ```
 
 
-#### 使用gRPC，服务端直接将Python服务注册到gRPC, Java客户端根据端口号通过gRPC注册中心调用服务端服务
+#### 使用gRPC
+
+服务端直接将Python服务注册到gRPC, Java客户端根据端口号通过gRPC注册中心调用服务端服务。具体过程如下：
+
+Python服务端将服务直接注册到gRPC注册中心，Java客户端通过端口号映射请求相关的服务，gRPC协议层接受服务之后，由应用层对服务进行处理，可以直接调用注册的服务实例，服务计算完成之后返回结果给gRPC，响应回调通知线程，Java客户端接收返回的结果。
 
 0. 安装依赖
-Python: pipinstall grpcio / pipinstall grpcio-tls
+
+Python: ```pipinstall grpcio / pipinstall grpcio-tls```
 
 Java在maven中加入相关的依赖：
 ```xml
@@ -214,9 +227,9 @@ hello world
 ```
 #### 两种方式对比
 
-1. 采用Web服务进行调用，后端对应用的处理线程采用同步阻塞的模型，阻塞的时间取决对方I/O处理的速度和网络I/O传输的速度，两种不同代码之间通过HTTP请求或者JSON封装进行交互，效率较低
+1. 采用Web服务进行调用，后端对应用的处理线程采用同步阻塞的模型，阻塞的时间取决对方I/O处理的速度和网络I/O传输的速度，两种不同代码之间通过HTTP请求或者JSON封装进行交互，效率较低。
 
-2. 采用gRPC，有了服务的注册中心，服务切换更新更加轻量化，并且遵循 Netty 的线程分工原则，协议层消息的接收和编解码由Netty 的 I/O(NioEventLoop)线程负责；后续应用层的处理由应用线程负责，防止由于应用处理耗时而阻塞 Netty 的 I/O 线程， 可以通过服务名和方法名调用，直接调用启动的时候注册的服务实例，不需要反射或者JSON编码解码进行调用，性能更优
+2. 采用gRPC，有了服务的注册中心，服务切换更新更加轻量化，并且遵循 Netty 的线程分工原则，协议层消息的接收和编解码由Netty 的 I/O(NioEventLoop)线程负责；后续应用层的处理由应用线程负责，防止由于应用处理耗时而阻塞 Netty 的 I/O 线程， 可以通过服务名和方法名调用，直接调用启动的时候注册的服务实例，不需要反射或者JSON编码解码进行调用，性能更优； 不过因为有Netty的线程分工原则，gRPC之间会做频繁的线程切换，如果在一次gRPC调用过程中，做了多次I/O线程到应用线程之间的切换，会导致性能的下降。
 
 
 #### 参考文档
