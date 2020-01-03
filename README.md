@@ -1,6 +1,6 @@
 ### Java客户端调用Python服务端
 
-如果我们的大型web服务是采用Spring框架编写的，然而深度学习计算框架TensorFlow是采用Python编写的，那么如何让客户端调用Python服务端的计算资源返回结果呢，一种可以采用传统的HTTP Web Service的方式，将服务端封装为Web服务，客户端直接通过JSON请求进行调用并返回结果；另外一种是通过基于HTTP2协议RPC服务，Python将计算服务注册在注册中心，Java客户端通过端口号在注册中心找到对应的服务后，调用服务端的服务实例。
+某些大型web服务一般是采用Spring框架编写的，然而深度学习计算框架TensorFlow是采用Python编写的，那么如何让客户端调用Python服务端的计算资源返回结果呢，一种可以采用传统的HTTP Web Service的方式，将服务端封装为Web服务，客户端直接通过JSON请求进行调用并返回结果；另外一种是通过基于HTTP2协议RPC服务，Python将计算服务注册在注册中心，Java客户端通过端口号在注册中心找到对应的服务后，调用服务端的服务实例。
 
 #### 使用Web Service调用
 
