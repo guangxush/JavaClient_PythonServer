@@ -194,7 +194,7 @@ public class HelloWorldClient {
 }
 ```
 
-4. 编写helloworld.proto参数与2保持一致
+4. 编写helloworld.proto参数与2保持一致, 然后使用maven进行编译
 
 ```proto
 syntax = "proto3";
